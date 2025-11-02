@@ -1,0 +1,154 @@
+/* ================================
+   🎬 Tema Clean Minimalista - FilmeApp
+   ================================ */
+
+/* --- Reset suave e tipografia --- */
+body {
+    background-color: #F9F7FC;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    color: #2E2A3B;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+/* --- Navbar --- */
+.navbar {
+    background-color: #8A4FFF !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #ffffff !important;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    color: #f3e9ff !important;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #ffffff !important;
+}
+
+.navbar-text {
+    color: #f3e9ff;
+}
+
+/* --- Botões --- */
+.btn-primary {
+    background-color: #8A4FFF;
+    border-color: #8A4FFF;
+}
+
+.btn-primary:hover {
+    background-color: #6A38C2;
+    border-color: #6A38C2;
+}
+
+.btn-outline-light {
+    border-color: #f3e9ff;
+    color: #f3e9ff;
+}
+
+.btn-outline-light:hover {
+    background-color: #ffffff;
+    color: #8A4FFF;
+}
+
+.btn-outline-success {
+    border-color: #B497FF;
+    color: #B497FF;
+}
+
+.btn-outline-success:hover {
+    background-color: #B497FF;
+    color: #ffffff;
+}
+
+/* --- Cards e containers --- */
+.card {
+    border: none;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* --- Títulos --- */
+h1, h2, h3, h4, h5 {
+    font-weight: 600;
+    color: #2E2A3B;
+}
+
+h1 span.highlight {
+    color: #8A4FFF;
+}
+
+/* --- Inputs e campos de busca --- */
+input[type="text"], input[type="search"], .form-control {
+    border: 1px solid #DCD3F9;
+    border-radius: 6px;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+input[type="text"]:focus, input[type="search"]:focus, .form-control:focus {
+    border-color: #8A4FFF;
+    box-shadow: 0 0 0 0.2rem rgba(138, 79, 255, 0.2);
+}
+
+/* --- Alerts (mensagens flash) --- */
+.alert-success {
+    background-color: #ECE6FA;
+    border-color: #DCD3F9;
+    color: #2E2A3B;
+}
+
+.alert-danger {
+    background-color: #F9E6EC;
+    border-color: #F5C2C7;
+    color: #3E1E2B;
+}
+
+/* --- Rodapé --- */
+footer {
+    background-color: #ECE6FA;
+    color: #6A38C2;
+    padding: 1rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* --- Links --- */
+a {
+    color: #8A4FFF;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #6A38C2;
+}
+
+/* --- Pequenos ajustes --- */
+.container {
+    max-width: 960px;
+}
+
+/* --- Animação suave para entrada de elementos --- */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.6s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}

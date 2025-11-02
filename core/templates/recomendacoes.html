@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Suas recomendações{% endblock %}
+
+{% block content %}
+<h2>🎬 Recomendações personalizadas</h2>
+<div class="fade-in">
+    {{ recomendacoes|safe }}
+</div>
+<a href="{% url 'persona' %}" class="btn btn-outline-secondary mt-3">Fazer novamente</a>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Página Inicial{% endblock %}
+
+{% block content %}
+<div class="text-center">
+  <h1>Bem-vindo ao Find My Film</h1>
+  <p class="lead">Aqui vamos ajudar voce a achar o seu filme de hoje.</p>
+
+  {% if user.is_authenticated %}
+    <p>Você está logado como <strong>{{ user.username }}</strong>.</p>
+  {% else %}
+    <a href="{% url 'login' %}" class="btn btn-primary">Fazer login</a>
+  {% endif %}
+</div>
+{% endblock %}

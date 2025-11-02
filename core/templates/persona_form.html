@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Descubra seu estilo de filmes{% endblock %}
+
+{% block content %}
+<h2>🎭 Descubra sua persona de filmes</h2>
+<p>Responda algumas perguntas rápidas e veja recomendações personalizadas.</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Gerar recomendações</button>
+</form>
+{% endblock %}
