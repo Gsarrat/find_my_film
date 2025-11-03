@@ -10,10 +10,10 @@ def traduzir_titulo(titulo):
     """Traduz o título para inglês antes da busca no TMDb."""
     try:
         traducao = GoogleTranslator(source="auto", target="en").translate(titulo)
-        print(f"🌐 '{titulo}' → '{traducao}'")
+        
         return traducao
     except Exception as e:
-        print(f"⚠️ Erro ao traduzir '{titulo}': {e}")
+        
         return titulo
 
 
@@ -40,16 +40,16 @@ def buscar_filmes_imdb(html_text):
                 continue
             encontrados.add(titulo)
 
-    print(f"🎯 Títulos extraídos da IA: {list(encontrados)}")
+    
 
     if not encontrados:
-        print("⚠️ Nenhum título reconhecido no texto da IA.")
+        
         return []
 
     for titulo in encontrados:
         try:
             titulo_en = traduzir_titulo(titulo)
-            print(f"🔍 Buscando no TMDb: {titulo_en}")
+            
 
             r = requests.get(
                 "https://api.themoviedb.org/3/search/movie",
@@ -61,7 +61,7 @@ def buscar_filmes_imdb(html_text):
                 filme = data["results"][0]
                 imdb_id = None
 
-                # tenta buscar o IMDb ID via movie details
+                
                 detalhes = requests.get(
                     f"https://api.themoviedb.org/3/movie/{filme['id']}",
                     params={"api_key": TMDB_API_KEY, "append_to_response": "external_ids", "language": "pt-BR"}
@@ -77,12 +77,12 @@ def buscar_filmes_imdb(html_text):
                     "link": link_imdb,
                     "sinopse": filme.get("overview", ""),
                 })
-                print(f"✅ Encontrado: {filme['title']}")
+                print(f"Encontrado: {filme['title']}")
             else:
-                print(f"❌ Não encontrado: {titulo_en}")
+                print(f"Não encontrado: {titulo_en}")
 
         except Exception as e:
-            print(f"⚠️ Erro ao buscar {titulo}: {e}")
+            print(f"Erro ao buscar {titulo}: {e}")
 
-    print(f"🎬 Total de filmes encontrados: {len(filmes)}")
+    print(f"Total de filmes encontrados: {len(filmes)}")
     return filmes

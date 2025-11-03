@@ -24,7 +24,7 @@ class Persona(models.Model):
 class Recomendacao(models.Model):
     persona = models.ForeignKey(Persona, on_delete=models.CASCADE)
     data_criacao = models.DateTimeField(auto_now_add=True)
-    filmes_html = models.TextField()  # conteúdo HTML retornado pela IA
+    filmes_html = models.TextField()  
 
     def __str__(self):
         return f"Recomendações de {self.persona.user.username} em {self.data_criacao:%d/%m/%Y}"
