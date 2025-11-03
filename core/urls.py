@@ -1,12 +1,21 @@
 from django.urls import path
-from . import views
 from django.contrib.auth import views as auth_views
-from .views import CustomLoginView
+from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # Login e logout
+    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
+
+    # Registro
     path('register/', views.register, name='register'),
-    path('perfil/', views.persona_view, name='persona'),
+
+    # Persona e recomendações
+    path('persona/', views.persona_view, name='persona'),
+    path('recomendacoes/<str:titulo>/assistido/', views.marcar_assistido, name='marcar_assistido'),
+
+    # Painel do usuário
+    path('meu-perfil/', views.dashboard_view, name='dashboard'),
 ]

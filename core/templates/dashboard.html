@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>👤 Meu Perfil</h2>
+    <hr>
+
+    {% if persona %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+            <h4>🎭 Sua Persona</h4>
+            <p><strong>Nome:</strong> {{ persona.nome }}</p>
+            <p><strong>Gêneros favoritos:</strong> {{ persona.genero_favorito }}</p>
+            <p><strong>Humor atual:</strong> {{ persona.humor }}</p>
+            <p><strong>Tempo disponível:</strong> {{ persona.tempo_disponivel }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-8">
+            <h4>🎞️ Filmes Assistidos</h4>
+            {% if filmes %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Nota</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in filmes %}
+                    <tr>
+                        <td>{{ f.titulo }}</td>
+                        <td>{{ f.nota }}/5</td>
+                        <td>{{ f.data_assistido|date:"d/m/Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>Você ainda não marcou nenhum filme como assistido.</p>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <h4>📊 Estatísticas</h4>
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Total de filmes assistidos
+                    <span class="badge bg-primary rounded-pill">{{ total_filmes }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    Nota média
+                    <span class="badge bg-success rounded-pill">{{ nota_media }}</span>
+                </li>
+            </ul>
+
+            <canvas id="graficoNotas" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <hr>
+    <h4>🧠 Últimas Recomendações</h4>
+    {% if recomendacoes %}
+        {% for r in recomendacoes %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">{{ r.data_criacao|date:"d/m/Y H:i" }}</h6>
+                <div>{{ r.filmes_html|safe }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Você ainda não gerou recomendações.</p>
+    {% endif %}
+</div>
+
+<!-- Chart.js via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('graficoNotas');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ grafico_labels|safe }},
+        datasets: [{
+            label: 'Notas dos filmes',
+            data: {{ grafico_dados|safe }},
+            borderWidth: 1,
+            backgroundColor: 'rgba(156, 120, 255, 0.5)',
+            borderColor: '#7A3FFF'
+        }]
+    },
+    options: {
+        scales: { y: { beginAtZero: true, max: 5 } }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Avaliar filme{% endblock %}
+{% block content %}
+<h3>Avaliar "{{ titulo }}"</h3>
+<form method="post">
+  {% csrf_token %}
+  
+  <label>Nota:</label>
+  <div class="star-rating">
+    <span class="star" data-value="1">&#9733;</span>
+    <span class="star" data-value="2">&#9733;</span>
+    <span class="star" data-value="3">&#9733;</span>
+    <span class="star" data-value="4">&#9733;</span>
+    <span class="star" data-value="5">&#9733;</span>
+
+  </div>
+  <input type="hidden" name="nota" id="nota" required>
+
+  <button type="submit" class="btn btn-success mt-2">Salvar</button>
+</form>
+
+<style>
+.star-rating {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+}
+.star-rating .star.filled {
+  color: gold;
+}
+</style>
+
+<script>
+const stars = document.querySelectorAll('.star-rating .star');
+const notaInput = document.getElementById('nota');
+
+stars.forEach(star => {
+  star.addEventListener('click', () => {
+    const value = parseInt(star.dataset.value);
+    notaInput.value = value; // atualiza input oculto
+    stars.forEach(s => {
+      s.classList.toggle('filled', parseInt(s.dataset.value) <= value);
+    });
+  });
+  
+  star.addEventListener('mouseover', () => {
+    const value = parseInt(star.dataset.value);
+    stars.forEach(s => {
+      s.classList.toggle('filled', parseInt(s.dataset.value) <= value);
+    });
+  });
+  
+  star.addEventListener('mouseout', () => {
+    const value = parseInt(notaInput.value) || 0;
+    stars.forEach(s => {
+      s.classList.toggle('filled', parseInt(s.dataset.value) <= value);
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -78,6 +78,13 @@ TEMPLATES = [
     },
 ]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-movie-cache'
+    }
+}
+
 WSGI_APPLICATION = "gift_llm.wsgi.application"
 
 
