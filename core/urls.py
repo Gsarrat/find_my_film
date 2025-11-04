@@ -16,4 +16,10 @@ urlpatterns = [
 
     # Painel do usuario
     path('meu-perfil/', views.dashboard_view, name='dashboard'),
+
+    # Busca da Index
+    path('buscar_filme/', views.buscar_filme, name='buscar_filme'),
+    path('marcar-assistido/<str:titulo>/', views.marcar_assistido, name='marcar_assistido'), 
+    path('marcar_assistido/', views.marcar_assistido_api, name='marcar_assistido_api'),
+    path('movie_details/', views.movie_details, name='movie_details'),
 ]

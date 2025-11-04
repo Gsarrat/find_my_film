@@ -9,16 +9,268 @@
   {% if user.is_authenticated %}
     <p class="mb-4">Você está logado como <strong>{{ user.username }}</strong>.</p>
 
-    <div class="d-flex justify-content-center gap-3 flex-wrap">
+    <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
       <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-lg">Meu Painel</a>
       <a href="{% url 'persona' %}" class="btn btn-outline-secondary btn-lg">Minha Persona</a>
       <a href="{% url 'persona' %}" class="btn btn-primary btn-lg">Recomendar Filmes</a>
     </div>
   {% else %}
-    <div class="mt-4">
+    <div class="mt-4 mb-4">
       <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-2">Entrar</a>
       <a href="{% url 'register' %}" class="btn btn-outline-success btn-lg">Cadastrar</a>
     </div>
   {% endif %}
+
+  <!-- Barra de Busca -->
+  <div class="mt-5 mb-4">
+    <h3 class="mb-3">Procurar Filmes</h3>
+    <div class="d-flex justify-content-center">
+      <input id="busca-filme" class="form-control form-control-lg w-50" type="text"
+             placeholder="Digite o nome de um filme..." oninput="buscarFilmes(this.value)">
+    </div>
+  </div>
+
+<!-- Resultados -->
+<div id="resultados-filmes" class="row justify-content-center mt-4"></div>
+
+
+<!-- Modal Bootstrap -->
+<div class="modal fade" id="movieModal" tabindex="-1" aria-labelledby="movieModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="movieModalTitle" class="modal-title"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-4">
+            <img id="movieModalPoster" src="" alt="" class="img-fluid rounded">
+          </div>
+          <div class="col-md-8">
+            <p id="movieModalOverview"></p>
+            <p><strong>Diretor:</strong> <span id="movieModalDirector"></span></p>
+            <p><strong>Elenco:</strong> <span id="movieModalCast"></span></p>
+            <p><strong>Duração:</strong> <span id="movieModalRuntime"></span> min</p>
+            <p><strong>Gêneros:</strong> <span id="movieModalGenres"></span></p>
+            <p><strong>Nota TMDb:</strong> <span id="movieModalVote"></span> (<span id="movieModalVoteCount"></span> votos)</p>
+
+            <div class="d-flex gap-2">
+              <a id="movieModalImdb" href="#" target="_blank" class="btn btn-outline-primary btn-sm">Ver no IMDb</a>
+              <a id="movieModalTrailer" href="#" target="_blank" class="btn btn-outline-danger btn-sm d-none">
+                Ver Trailer
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="star-rating me-auto" id="modal-star-rating" data-titulo=""></div>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
 </div>
+
+<style>
+.star-rating {
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+}
+.star-rating .star.filled {
+  color: gold;
+}
+</style>
+
+<script>
+const MARCAR_URL = "{% url 'marcar_assistido_api' %}";
+const MOVIE_DETAILS_URL = "{% url 'movie_details' %}";
+
+function renderPoster(poster) {
+  return poster ? poster : '/static/img/no-poster.png';
+}
+
+async function buscarFilmes(termo) {
+  const resultados = document.getElementById('resultados-filmes');
+  resultados.innerHTML = '';
+
+  if (termo.length < 2) return;
+
+  const resp = await fetch(`/buscar_filme/?q=${encodeURIComponent(termo)}`);
+  const data = await resp.json();
+
+  if (!data.results || data.results.length === 0) {
+    resultados.innerHTML = '<p class="text-muted">Nenhum filme encontrado.</p>';
+    return;
+  }
+
+  resultados.innerHTML = data.results.map(filme => `
+    <div class="col-md-3 col-sm-6 mb-4">
+      <div class="card h-100 shadow-sm movie-card" data-tmdb-id="${filme.tmdb_id}">
+        <img src="${renderPoster(filme.poster)}" class="card-img-top" alt="${filme.titulo}">
+        <div class="card-body text-center">
+          <h5 class="card-title">${filme.titulo}</h5>
+          <p class="text-muted">${filme.ano}</p>
+
+          <div class="star-rating" data-tmdb-id="${filme.tmdb_id}" data-imdb-id="${filme.imdb_id || ''}" data-titulo="${filme.titulo}">
+            ${[1,2,3,4,5].map(n => `<span class="star" data-value="${n}">&#9733;</span>`).join('')}
+          </div>
+
+          <small class="text-muted d-block mt-2">Avalie para marcar como assistido</small>
+          <a href="${filme.link}" target="_blank" class="btn btn-outline-primary btn-sm mt-2">Ver no IMDb</a>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  inicializarEstrelas(); 
+  preencherAvaliacoesExistentes(data.results);
+
+  // abrir modal ao clicar no card
+  document.querySelectorAll('.movie-card').forEach(card => {
+    card.addEventListener('click', async (e) => {
+      if (e.target.closest('.star') || e.target.closest('a')) return;
+      const tmdbId = card.dataset.tmdbId;
+      await abrirModalFilme(tmdbId);
+    });
+  });
+}
+
+function preencherAvaliacoesExistentes(results) {
+  results.forEach(filme => {
+    if (!filme.user_rating) return;
+    const el = document.querySelector(`.star-rating[data-tmdb-id="${filme.tmdb_id}"]`);
+    if (!el) return;
+    const estrelas = el.querySelectorAll('.star');
+    const nota = parseInt(filme.user_rating);
+    estrelas.forEach(s => s.classList.toggle('filled', parseInt(s.dataset.value) <= nota));
+    el.dataset.nota = nota;
+  });
+}
+
+function inicializarEstrelas() {
+  document.querySelectorAll('.star-rating').forEach(grupo => {
+    const estrelas = grupo.querySelectorAll('.star');
+    let nota = parseInt(grupo.dataset.nota) || 0;
+
+    estrelas.forEach(star => {
+      star.addEventListener('click', async (ev) => {
+        ev.stopPropagation();
+        nota = parseInt(star.dataset.value);
+        atualizarEstrelas(estrelas, nota);
+        await enviarAvaliacao({
+          titulo: grupo.dataset.titulo,
+          nota: nota,
+          tmdb_id: grupo.dataset.tmdbId,
+          imdb_id: grupo.dataset.imdbId
+        });
+        grupo.dataset.nota = nota;
+      });
+
+      star.addEventListener('mouseover', () => {
+        atualizarEstrelas(estrelas, parseInt(star.dataset.value));
+      });
+
+      star.addEventListener('mouseout', () => {
+        atualizarEstrelas(estrelas, nota);
+      });
+    });
+  });
+}
+
+function atualizarEstrelas(estrelas, nota) {
+  estrelas.forEach(s => s.classList.toggle('filled', parseInt(s.dataset.value) <= nota));
+}
+
+async function enviarAvaliacao(payload) {
+  try {
+    const resp = await fetch(MARCAR_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if (!data.success) {
+      console.error('Erro ao salvar avaliação:', data);
+      alert('Erro ao salvar avaliação.');
+    }
+  } catch (e) {
+    console.error(e);
+    alert('Erro na comunicação com o servidor.');
+  }
+}
+
+async function abrirModalFilme(tmdbId) {
+  const resp = await fetch(`${MOVIE_DETAILS_URL}?tmdb_id=${tmdbId}`);
+  const d = await resp.json();
+  if (d.error) { alert('Erro ao buscar detalhes: ' + d.error); return; }
+
+  document.getElementById('movieModalTitle').textContent = d.titulo + (d.ano ? ` (${d.ano})` : '');
+  document.getElementById('movieModalPoster').src = d.poster || '/static/img/no-poster.png';
+  document.getElementById('movieModalOverview').textContent = d.sinopse || 'Sem sinopse disponível.';
+  document.getElementById('movieModalDirector').textContent = d.director || '-';
+  document.getElementById('movieModalCast').textContent = d.cast.map(c => `${c.name} como ${c.character}`).join(', ');
+  document.getElementById('movieModalRuntime').textContent = d.runtime || '-';
+  document.getElementById('movieModalGenres').textContent = (d.genres || []).join(', ');
+  document.getElementById('movieModalVote').textContent = d.vote_average || '-';
+  document.getElementById('movieModalVoteCount').textContent = d.vote_count || '0';
+
+  const imdbLink = d.imdb_id ? `https://www.imdb.com/title/${d.imdb_id}` : '#';
+  document.getElementById('movieModalImdb').href = imdbLink;
+
+  const trailerBtn = document.getElementById('movieModalTrailer');
+  if (d.trailer) {
+    trailerBtn.href = d.trailer;
+    trailerBtn.classList.remove('d-none');
+  } else {
+    trailerBtn.classList.add('d-none');
+  }
+
+  // Estrelas do modal
+  const modalStarsContainer = document.getElementById('modal-star-rating');
+  modalStarsContainer.innerHTML = [1,2,3,4,5].map(n => `<span class="star" data-value="${n}">&#9733;</span>`).join('');
+  modalStarsContainer.dataset.titulo = d.titulo || '';
+  modalStarsContainer.dataset.tmdbId = d.tmdb_id || '';
+  modalStarsContainer.dataset.imdbId = d.imdb_id || '';
+
+  const modalStars = modalStarsContainer.querySelectorAll('.star');
+  let modalNota = 0;
+  modalStars.forEach(star => {
+    star.addEventListener('click', async () => {
+      modalNota = parseInt(star.dataset.value);
+      atualizarEstrelas(modalStars, modalNota);
+      await enviarAvaliacao({
+        titulo: modalStarsContainer.dataset.titulo,
+        nota: modalNota,
+        tmdb_id: modalStarsContainer.dataset.tmdbId,
+        imdb_id: modalStarsContainer.dataset.imdbId
+      });
+    });
+    star.addEventListener('mouseover', () => atualizarEstrelas(modalStars, parseInt(star.dataset.value)));
+    star.addEventListener('mouseout', () => atualizarEstrelas(modalStars, modalNota));
+  });
+
+  new bootstrap.Modal(document.getElementById('movieModal')).show();
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+</script>
+
 {% endblock %}

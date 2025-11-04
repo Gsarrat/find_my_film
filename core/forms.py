@@ -25,7 +25,16 @@ class PersonaForm(forms.ModelForm):
             ('longo', 'Mais de 2h'),
         ]
     )
-
+    anos = forms.ChoiceField(
+    label='Período dos filmes preferido:',
+    choices=[
+        ('todos', 'Qualquer ano'),
+        ('antigos', 'Antes de 2000'),
+        ('recentes', 'De 2000 a 2020'),
+        ('atuais', 'De 2020 até hoje'),
+    ]
+    )
+    
     class Meta:
         model = Persona
         fields = ['nome', 'genero_favorito', 'humor', 'tempo_disponivel']

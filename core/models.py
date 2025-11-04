@@ -16,6 +16,7 @@ class Persona(models.Model):
     humor = models.CharField(max_length=50)
     tempo_disponivel = models.CharField(max_length=20)
     ultima_atualizacao = models.DateTimeField(auto_now=True)
+    
 
     def __str__(self):
         return f"{self.user.username} - {self.genero_favorito}"
